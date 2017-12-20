@@ -22,4 +22,8 @@ class HomeController @Inject()(config: Configuration, cc: ControllerComponents) 
     val key = config.get[String]("meetup.api-key")
     Ok(views.html.index(key))
   }
+
+  def effort(from: Option[String], to: Option[String]) = Action { implicit request: Request[AnyContent] =>
+    Ok(views.html.index("effort from " + from + " to " + to))
+  }
 }
