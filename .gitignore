@@ -10,3 +10,6 @@ target
 *~
 \#*\#
 .DS_Store
+local.properties
+local.sbt
+.env*
