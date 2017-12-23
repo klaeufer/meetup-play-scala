@@ -12,13 +12,14 @@ import play.api.mvc._
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try
+import models._
 
 /**
- * This controller creates an `Action` to handle HTTP requests to the
- * application's home page.
- */
+  * This controller creates an `Action` to handle HTTP requests to the
+  * application's home page.
+  */
 @Singleton
-class HomeController @Inject()(config: Configuration, cc: ControllerComponents, ws: WSClient, ec: ExecutionContext) extends AbstractController(cc) {
+class HomeController @Inject() (config: Configuration, cc: ControllerComponents, ws: WSClient, ec: ExecutionContext) extends AbstractController(cc) {
 
   implicit val implicitEc = ec
 
@@ -37,20 +38,20 @@ class HomeController @Inject()(config: Configuration, cc: ControllerComponents, 
   }
 
   /**
-   * Create an Action to render an HTML page.
-   *
-   * The configuration in the `routes` file means that this method
-   * will be called when the application receives a `GET` request with
-   * a path of `/`.
-   */
+    * Create an Action to render an HTML page.
+    *
+    * The configuration in the `routes` file means that this method
+    * will be called when the application receives a `GET` request with
+    * a path of `/`.
+    */
   def index() = Action {
     Ok(views.html.index())
   }
 
-  def effort(from: Option[String], until: Option[String]) = Action.async {
-    val request = ws.url(ServiceUrl).addQueryStringParameters("key" -> apiKey)
-    logger.debug(s"submitting request to ${request.url}")
-    request.get() map { response =>
+  def effort(from: Option[String], until: Option[String]) = Action.async { implicit request =>
+    val client = ws.url(ServiceUrl).addQueryStringParameters("key" -> apiKey)
+    logger.debug(s"submitting request to ${client.url}")
+    client.get() map { response =>
       logger.debug(response.body)
       response.status match {
         case HttpStatus.OK =>
@@ -64,12 +65,11 @@ class HomeController @Inject()(config: Configuration, cc: ControllerComponents, 
             // val events = Json.fromJson[IndexedSeq[Event]](json)
             val events = json.as[JsArray].value flatMap { _.validate[Event].asOpt }
             logger.debug(s"found ${events.length} events total")
-            val eventsDuringInterval = events filter { event => interval.contains(event.time) }
-            logger.debug(s"found ${eventsDuringInterval.length} events during $interval")
-            logger.debug(eventsDuringInterval.toString)
-            val durationMillis = eventsDuringInterval.map { _.duration }.sum
-            val result = Effort(interval.start, interval.end, Duration.millis(durationMillis))
-            Ok(views.html.index(result.toString))
+            val result = Effort(events, interval)
+            render {
+              case Accepts.Html() => Ok(views.html.index(result.toString))
+              case _              => Ok(Json.toJson(result))
+            }
           } getOrElse {
             Ok(views.html.index("JSON parse error"))
           }

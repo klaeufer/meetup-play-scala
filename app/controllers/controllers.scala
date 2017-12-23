@@ -1,7 +1,4 @@
-import com.github.nscala_time.time.Imports.{ DateTime, Duration }
-
 package object controllers {
-
   val AppName = "meetupConnector"
   val AppVersion = "0.1"
 
@@ -21,23 +18,4 @@ package object controllers {
   val RedirectUrl = s"http://localhost:$RedirectServerPort"
   val DefaultWebServerPort = "8080"
   val WebServerAddress = "0.0.0.0"
-
-  case class Event(
-    time: Long,
-    duration: Long,
-    name: String,
-    group: Group
-  )
-
-  case class Group(
-    name: String,
-    id: Int,
-    urlname: String
-  )
-
-  case class Effort(
-    from: DateTime,
-    to: DateTime,
-    duration: Duration
-  )
 }
