@@ -1,6 +1,6 @@
-@(message: String = "hello")
+@(authUrl: java.net.URI)
 
-@main("Welcome to Play") {
-  <h1>Welcome to Play!</h1>
-  <p>@message</p>
+@main("Meetup Effort Calculator") {
+  <h1>Welcome to the Meetup Effort Calculator!</h1>
+  <a href="@authUrl.toString">Login via Meetup</a>
 }
